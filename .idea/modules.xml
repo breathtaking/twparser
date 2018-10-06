@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/twparser.iml" filepath="$PROJECT_DIR$/.idea/modules/twparser.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/twparser_main.iml" filepath="$PROJECT_DIR$/.idea/modules/twparser_main.iml" group="twparser" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/twparser_test.iml" filepath="$PROJECT_DIR$/.idea/modules/twparser_test.iml" group="twparser" />
+    </modules>
+  </component>
+</project>
