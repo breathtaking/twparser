@@ -10,6 +10,6 @@ public class DataBaseInteractionManager {
 
     public static void main(String[] args) throws SQLException {
         entityFactory = HibernateEntityFactory.getInstance();
-        entityFactory.getUserDao().addUser("d");
+        entityFactory.getUserDao().checkUser("d");
     }
 }

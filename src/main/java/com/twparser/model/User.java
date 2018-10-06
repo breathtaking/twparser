@@ -49,5 +49,8 @@ public class User {
     @Column(name = "number_of_posts")
     private int numberOfPosts;
 
-
+    @Override
+    public String toString() {
+        return profileUrl.toString();
+    }
 }
