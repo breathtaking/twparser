@@ -1,9 +1,7 @@
 package com.twparser.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.Tolerate;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -18,6 +16,7 @@ import java.time.LocalDateTime;
 @Table(name = "POST")
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Post {
     /** Unique post id and PK in db. */
     @Id @GeneratedValue
@@ -27,6 +26,10 @@ public class Post {
     /** User id this post is relates to. */
     @Column(name = "user_id")
     private String userId;
+
+    /** Type of post. */
+    @Column(name = "post_type")
+    private PostType postType;
 
     /** Link to the post in Twitter. */
     @Column(name = "post_url")
@@ -55,4 +58,8 @@ public class Post {
     /** Date the post has been posted. */
     @Column(name = "post_date")
     private LocalDateTime postDate;
+
+    /** Date the post has been posted. */
+    @Column(name = "embed_video_html")
+    private String embedVideoHtml;
 }

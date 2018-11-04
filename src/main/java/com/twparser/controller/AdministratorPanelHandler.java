@@ -35,9 +35,10 @@ public class AdministratorPanelHandler extends HttpServlet {
 
         List<Post> sorted = new ArrayList<>();
         sorted.addAll(posts);
-        int summCheck = (page * recordsPerPage -1) + recordsPerPage;
-        if (summCheck - posts.size() > 0) { summCheck = posts.size() - 1; }
-        List<Post> sublist = sorted.subList(page * recordsPerPage, summCheck);
+        int checker = (posts.size() - 1) - (page - 1) * recordsPerPage;
+        int endIndex = (page - 1) * recordsPerPage + (recordsPerPage);
+        if (checker < recordsPerPage) { endIndex = (page - 1) * recordsPerPage + checker + 1; }
+        List<Post> sublist = sorted.subList((page - 1) * recordsPerPage, endIndex);
 
         req.setAttribute("postList", sublist);
         req.setAttribute("noOfPages", noOfPages);
@@ -54,24 +55,19 @@ public class AdministratorPanelHandler extends HttpServlet {
         } catch (UnirestException e) {
             e.printStackTrace();
         }
-        //req.setAttribute("userUrl", userUrl);
-        //req.setAttribute("posts", posts);
-        //req.getRequestDispatcher("/WEB-INF/pages/new_user_summary_page.jsp").forward(req, resp);
 
-        //
         page = 1;
         int recordsPerPage = 10;
-        if(req.getParameter("page") != null) page = Integer.parseInt(req.getParameter("page"));
-        int noOfRecords = posts.size();
-        int noOfPages = (int) Math.ceil(noOfRecords * 1.0 / recordsPerPage);
+        int numberOfPosts = posts.size();
+        int numberOfPages = (int) Math.ceil(numberOfPosts * 1.0 / recordsPerPage);
 
 
         List<Post> sorted = new ArrayList<>();
         sorted.addAll(posts);
-        List<Post> sublist = sorted.subList(0 , recordsPerPage - 1);
+        List<Post> sublist = sorted.subList(0 , recordsPerPage);
 
         req.setAttribute("postList", sublist);
-        req.setAttribute("noOfPages", noOfPages);
+        req.setAttribute("noOfPages", numberOfPages);
         req.setAttribute("currentPage", page);
         req.getRequestDispatcher("/WEB-INF/pages/content.jsp").forward(req, resp);
     }

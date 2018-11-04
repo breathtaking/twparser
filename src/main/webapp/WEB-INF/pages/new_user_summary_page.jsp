@@ -20,9 +20,9 @@
     COMMENTS:${item.numberOfComments}<br>
     IMAGE:${item.imageUrl}<br>
     DATE:${item.postDate}<br>
-    <ul>
-        <li><a href="#"><img src="${item.imageUrl}"></a></li>
-    </ul>
+        <ul>
+            <li><a href="#"><img src="${item.imageUrl}"></a></li>
+        </ul>
 </c:forEach>
 
 </body>

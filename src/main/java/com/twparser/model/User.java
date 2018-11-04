@@ -21,7 +21,7 @@ public class User implements Serializable{
     /** Unique data-user-id attribute. */
     //@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private int userId;
+    private long userId;
 
     /** Identifier of the user in Twitter. */
     @Id @Column(name = "profile_identifier")

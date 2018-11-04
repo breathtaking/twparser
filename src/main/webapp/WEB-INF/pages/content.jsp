@@ -13,7 +13,22 @@
 
 <table border="1" cellpadding="5" cellspacing="5">
 <c:forEach var="post" items="${postList}">
-        <p>${post.imageUrl}</p>
+    <c:choose>
+        <c:when test="${post.postType eq 'PHOTO'}">
+            <ul>
+                <li><a href="${post.postUrl}"><img src="${post.imageUrl}"></a></li>
+            </ul>
+        </c:when>
+        <c:when test="${post.postType eq 'VIDEO'}">
+            <p>${post.embedVideoHtml}</p>
+        </c:when>
+        <c:when test="${post.postType eq 'GIF'}">
+            <p>${post.embedVideoHtml}</p>
+        </c:when>
+        <c:otherwise>
+            <p>UNKNOWN TYPE</p>
+        </c:otherwise>
+    </c:choose>
 </c:forEach>
 </table>
 

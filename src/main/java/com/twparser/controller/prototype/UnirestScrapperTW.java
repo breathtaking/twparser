@@ -5,6 +5,7 @@ import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.twparser.model.Post;
+import com.twparser.model.PostType;
 import com.twparser.model.User;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.HttpClient;
@@ -33,19 +34,11 @@ public final class UnirestScrapperTW {
     private static boolean hasNextPage;
     private static int totalPostEWritten;
     private static Random random;
-    private String SINGLE_PHOTO_CSS_CLASS_CONT = ".AdaptiveMedia-singlePhoto";
-    private static String SINGLE_PHOTO_CSS_CLASS = ".AdaptiveMedia-photoContainer";
+    private static String SINGLE_PHOTO_CSS_CLASS = ".AdaptiveMedia-singlePhoto";
+    private static String SINGLE_PHOTO_CSS_CLASS_CONT = ".AdaptiveMedia-photoContainer";
 
     private static String SINGLE_VIDEO_CSS_CLASS = ".PlayableMedia--video";
-    private String SINGLE_GIF_CSS_CLASS = ".PlayableMedia PlayableMedia--gif";
-
-    private String FOUR_PHOTO_CSS_CLASS = ".AdaptiveMedia-quadPhoto";
-    private String BIG_THIRD_PHOTO_CSS_CLASS = ".AdaptiveMedia-threeQuartersWidthPhoto";
-    private String SMALL_ONE_OF_THREE_PHOTO_CSS_CLASS_CONT = ".AdaptiveMedia-thirdHeightPhotoContainer";
-    private String SMALL_ONE_OF_THREE_PHOTO_CSS_CLASS = ".AdaptiveMedia-thirdHeightPhoto";
-
-    private String TWO_PHOTO_CSS_CLASS = ".AdaptiveMedia-doublePhoto";
-    private String TWO_PHOTO_CSS_CLASS_HALF = ".AdaptiveMedia-halfWidthPhoto";
+    private static String SINGLE_GIF_CSS_CLASS = ".PlayableMedia--gif";
 
     /**
      * Configures Standard cookie spec to allow
@@ -66,7 +59,6 @@ public final class UnirestScrapperTW {
      */
     public static User grabUser(String userId) {
         configureCookieSpec();
-        User user;
         try {
             HttpResponse<String> firstPageResponse = fireInitialGetFirstPageRequest(userId);
             if (firstPageResponse.getStatus() != 200) { return null; }
@@ -80,7 +72,7 @@ public final class UnirestScrapperTW {
             int followers = Integer.valueOf(navigationBarStuff.select(".ProfileNav-item--followers .ProfileNav-value").first().attr("data-count"));
             int likes = Integer.valueOf(navigationBarStuff.select(".ProfileNav-item--favorites .ProfileNav-value").first().attr("data-count"));
             String userName = profileHeaderStuff.select(".ProfileHeaderCard-name .ProfileHeaderCard-nameLink").text();
-            int dataUserId = Integer.valueOf(navigationBarStuff.attr("data-user-id"));
+            long dataUserId = Long.valueOf(navigationBarStuff.attr("data-user-id"));
             String profileAvatarUrl = jsoupResponse.select(".ProfileAvatar-image").attr("src");
             System.out.println(profileAvatarUrl);
             return new User(dataUserId, userId, userName, true, followers, following, tweets, likes, profileAvatarUrl);
@@ -101,6 +93,7 @@ public final class UnirestScrapperTW {
         hasNextPage = true;
         random = new Random(6L);
         configureCookieSpec();
+
         HttpResponse<String> firstPageResponse = fireInitialGetFirstPageRequest(profileIdentifier);
         cookies = firstPageResponse.getHeaders().get("Set-Cookie");
 
@@ -111,67 +104,54 @@ public final class UnirestScrapperTW {
             Elements postsOnThePage = jsoupResponse.select("div#timeline [id*='stream-item-tweet']");
             int postsPerPage = postsOnThePage.size();
             totalPostEWritten += postsPerPage;
-            dataMinPosition = jsoupResponse
-                    .selectFirst("div#timeline .stream-container")
-                    .attr("data-min-position");
+            dataMinPosition = jsoupResponse.selectFirst("div#timeline .stream-container").attr("data-min-position");
+
             for (Element post: postsOnThePage) {
-                boolean isMediaContentPresent = post.select(".AdaptiveMedia-singlePhoto").size() > 0;
-                boolean isVideo = post.select(SINGLE_VIDEO_CSS_CLASS).size() > 0;
-                //System.out.println("VIDEO POST SIZE" + post.select(SINGLE_VIDEO_CSS_CLASS).size());
-                //TODO DELETE
-                if (isVideo) {
-                    String postId = post.attr("data-item-id");
-                    String embededHtml = getEmbededPostHtml(profileIdentifier, postId);
-                    Post videoPost = new Post();
-                    videoPost.setImageUrl(embededHtml);
-                }
+                boolean isMediaContentPresent = post.select(".AdaptiveMediaOuterContainer").size() > 0;
                 if (!isMediaContentPresent) { continue; }
-                postList.add(createPhotoPost(post, profileIdentifier));
+                List<Post> newPost = createPost(post, profileIdentifier);
+                if(newPost.size() > 0) { postList.addAll(newPost); }
             }
             System.out.println("First Page Number Posts: " + postsPerPage);
             System.out.println("Total Page Number Posts: " + totalPostEWritten);
 
-            //System.out.println(jsoupResponse.body());
-
             while (hasNextPage) {
                 HttpResponse<JsonNode> responseNextPage = fireJsonGetNextPageRequest(profileIdentifier, dataMinPosition);
 
-                int responseCode2 = responseNextPage.getStatus();
-                System.out.println("Status:" + responseCode2);
+                int responseCodeNextPage = responseNextPage.getStatus();
+                System.out.println("Status: " + responseCodeNextPage);
 
                 Document jsoupResponseNext = Jsoup.parse(responseNextPage.getBody().getObject().get("items_html").toString());
                 String responseMinPosition = responseNextPage.getBody().getObject().get("min_position").toString();
                 hasNextPage = Boolean.valueOf(responseNextPage.getBody().getObject().get("has_more_items").toString());
 
-                //System.out.println(responseNextPage.getBody().getObject().get("items_html"));
                 System.out.println("Current Min Position " + responseMinPosition);
 
                 Elements postsOnTheNextPage = jsoupResponseNext.select("[id*='stream-item-tweet']");
-                //String dataMinPosition2 = nextPageElement2.attr("data-min-position");
-                int postsPerPage2 = postsOnTheNextPage.size();
-                totalPostEWritten += postsPerPage2;
+                int postsPerCurrentNextPage = postsOnTheNextPage.size();
+                totalPostEWritten += postsPerCurrentNextPage;
 
                 for (Element post: postsOnTheNextPage) {
-                    boolean isMediaContentPresent = post.select(".AdaptiveMedia-photoContainer").size() > 0;
-                    //TODO DELETE
-                    boolean isVideo = post.select(SINGLE_VIDEO_CSS_CLASS).size() > 0;
-                    //System.out.println("VIDEO POST SIZE" + post.select(SINGLE_VIDEO_CSS_CLASS).size());
-                    if (isVideo) {
-                        String postId = post.attr("data-item-id");
-                        String embededHtml = getEmbededPostHtml(profileIdentifier, postId);
-                        System.out.println(embededHtml);
-                        Post videoPost = new Post();
-                        videoPost.setImageUrl(embededHtml);
-                        videoPost.setPostUrl(postId);
-                        videoPost.setUserId(profileIdentifier);
-                        postList.add(videoPost);
+                    boolean isMediaContentPresent = post.select(".AdaptiveMediaOuterContainer").size() > 0;
+                    if (isMediaContentPresent) {
+                        List<Post> newPost = createPost(post, profileIdentifier);
+                        if(newPost.size() > 0) { postList.addAll(newPost); }
+
+                        for (Post addedPost : newPost) {
+                            System.out.println("POST TYPE: " + addedPost.getPostType() +
+                                    "POST ID: " + addedPost.getPostId() + " " +
+                                    "POST URL: " + addedPost.getPostUrl() + " " +
+                                    "POST TITLE: " + addedPost.getPostTitle() + " " +
+                                    "LIKES: " + addedPost.getNumberofLikes() + " " +
+                                    "IMG URL " + addedPost.getImageUrl()
+                            );
+                        }
                     }
-                    if (!isMediaContentPresent) { continue; }
-                    postList.add(createPhotoPost(post, profileIdentifier));
                 }
+
                 dataMinPosition = responseMinPosition.isEmpty() ? null : responseMinPosition;
                 System.out.println("Next Min Position " + dataMinPosition);
-                System.out.println("Current Page Number Posts: " + postsPerPage2);
+                System.out.println("Current Page Number Of Posts: " + postsPerCurrentNextPage);
                 System.out.println("Total Page Number Posts: " + totalPostEWritten);
 
                 try {
@@ -182,15 +162,10 @@ public final class UnirestScrapperTW {
 
                 System.out.println("------------------------------");
                 System.out.println();
-                //System.out.println(postsOnTheNextPage.get(0).toString());
             }
             totalPostEWritten = 0;
             return postList;
         }
-    }
-
-    private static String createVideoPost(Element post, String profileIdentifier) {
-         return "";
     }
 
     /**
@@ -200,22 +175,53 @@ public final class UnirestScrapperTW {
      * @param profileIdentifier unique identifier of requested profile.
      * @return Post.
      */
-    private static Post createPhotoPost(Element post, String profileIdentifier) {
+    private static List<Post> createPost(Element post, String profileIdentifier) throws UnirestException {
+        String postId = post.attr("data-item-id");
+
+        boolean isPhotoPostPresent = post.select(SINGLE_PHOTO_CSS_CLASS_CONT).size() > 0;
+        boolean isVideoPostPresent = post.select(SINGLE_VIDEO_CSS_CLASS).size() > 0;
+        boolean isGifPostPresent = post.select(SINGLE_GIF_CSS_CLASS).size() > 0;
+
+        if (isVideoPostPresent) {
+            List<Post> postList = new ArrayList<>();
+            String embededHtml = getEmbededPostHtml(profileIdentifier, postId);
+            postList.add(grabCommonProfileInfo(post, profileIdentifier)
+                    .embedVideoHtml(embededHtml)
+                    .postType(PostType.VIDEO)
+                    .build());
+            return postList;
+        }
+
+        if (isGifPostPresent) {
+            List<Post> postList = new ArrayList<>();
+            String embededHtml = getEmbededPostHtml(profileIdentifier, postId);
+            postList.add(grabCommonProfileInfo(post, profileIdentifier)
+                    .embedVideoHtml(embededHtml)
+                    .postType(PostType.GIF)
+                    .build());
+            return postList;
+        }
+
+        if (isPhotoPostPresent) {
+            List<Post> postList = new ArrayList<>();
+            for (Element singlePhoto : post.select(SINGLE_PHOTO_CSS_CLASS_CONT)) {
+                String imageUrl = singlePhoto.select("img").attr("src");
+                postList.add(grabCommonProfileInfo(post, profileIdentifier)
+                        .imageUrl(imageUrl)
+                        .postType(PostType.PHOTO)
+                        .build());
+            }
+            return postList;
+        }
+
+        return Collections.emptyList();
+    }
+
+    private static Post.PostBuilder grabCommonProfileInfo (Element post, String profileIdentifier) {
         String postId = post.attr("data-item-id");
         String postTitle = post.select("[class*='TweetTextSize']").text();
-        String postUrl = String.format("https://twitter.com/%s/status/%s?conversation_id=%s", profileIdentifier, postId, postId);
-
-        List <String> imgUrl = new ArrayList<>();
-        Elements mediaContent = post.select(".AdaptiveMediaOuterContainer");
-        //Elements imgUrls = post.select("[class*='AdaptiveMedia-photoContainer js-adaptive-photo']");
-        Elements photoContainers = post.select(".AdaptiveMedia-photoContainer");
-
-        if (photoContainers.size() > 0) {
-            for (Element photoContainer : photoContainers) {
-                String url = photoContainer.select("img").attr("src");
-                imgUrl.add(url);
-            }
-        }
+        String postUrl = String.format(
+                "https://twitter.com/%s/status/%s?conversation_id=%s", profileIdentifier, postId, postId);
 
         LocalDateTime postTime = getParsedTime(
                 post.selectFirst("[class*='tweet-timestamp']").attr("title"));
@@ -226,12 +232,15 @@ public final class UnirestScrapperTW {
         int numberOfLikes = Integer.valueOf(
                 post.select(".ProfileTweet-actionCount").get(2).attr("data-tweet-stat-count"));
 
-        System.out.println("Time: " + postTime + " Post id: " + postId + " Likes " +  numberOfLikes + " Retweets:" + numberOfReteets + " Replies: " + numberOfReplies + " Post Title " + postTitle);
-
-        if (imgUrl.size() > 0) {
-            System.out.println("ImgURL: " + imgUrl.get(0));
-        }
-        return new Post(postId, profileIdentifier, postUrl, postTitle, numberOfLikes, numberOfReteets, numberOfReplies, imgUrl.get(0), postTime );
+        return Post.builder()
+                .postId(postId)
+                .userId(profileIdentifier)
+                .postUrl(postUrl)
+                .postTitle(postTitle)
+                .numberofLikes(numberOfLikes)
+                .numberOfRetwits(numberOfReteets)
+                .numberOfComments(numberOfReplies)
+                .postDate(postTime);
     }
 
     /**
@@ -318,7 +327,8 @@ public final class UnirestScrapperTW {
     public static void main(String[] args) throws Exception {
         configureCookieSpec();
         //grabUser("MeekMill");
-        grabAllPosts("MeekMill");
+        //grabAllPosts("MeekMill");
+        grabAllPosts("dailygif");
         //String Url = "https://api.twitter.com/1.1/videos/tweet/config/1033383340739424256.json";
 
         /**
