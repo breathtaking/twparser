@@ -14,40 +14,43 @@ import java.util.List;
 public class UserDao {
     public User getUser (String userId) { return null; }
     public List<User> getAllUsers() { return null;}
-    public boolean checkUser (String userId) {
+
+    boolean isUserExistsInDataBase(String userId) {
         Session session = null;
         try {
             session = HibernateSessionFactory.getUserSessionFactory().openSession();
             session.isOpen();
             session.getTransaction().begin();
-            String hql = "SELECT u.userId FROM User u";
+            String hql = "SELECT u.profileIdentifier FROM User u";
             Query query = session.createQuery(hql);
-            List<Integer> objectList= query.list();
-
-            System.out.println(objectList.get(2).intValue());
+            List objectList = query.list();
+            if (objectList.contains(userId)) return true;
+            System.out.println("user existing check: " + userId + ": " + objectList.contains(userId));
         } catch (Exception e) {
             System.out.println(e.getMessage());
+            System.out.println("Some error occurred during checking user: " + userId);
         } finally {
             if (session != null && session.isOpen()) {
-
                 session.close();
+                System.out.println("Session is closed");
             }
         }
-        return true; }
+        return false;
+    }
+
     public boolean deleteUser (String userId) { return true;}
 
-    boolean addUser (String userId) throws SQLException {
+    boolean addUser (User user) throws SQLException {
         Session session = null;
         try {
             session = HibernateSessionFactory.getUserSessionFactory().openSession();
             session.beginTransaction();
-            session.save(new User("2", true, 2, 4455));
+            session.save(user);
             session.getTransaction().commit();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         } finally {
             if (session != null && session.isOpen()) {
-
                 session.close();
             }
         }

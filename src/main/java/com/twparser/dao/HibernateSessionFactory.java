@@ -15,8 +15,13 @@ public class HibernateSessionFactory {
     static {
         try {
             //addPackage("com.xyz") //add package if used after configure.
-            userSessionFactory = new Configuration().
-                    configure().addAnnotatedClass(User.class).buildSessionFactory();
+            Configuration configuration = new Configuration();
+            configuration.addAnnotatedClass(User.class);
+
+            userSessionFactory = configuration
+                    .configure()
+                    .buildSessionFactory();
+
             postSessionFactory = new Configuration().
                     configure().addAnnotatedClass(Post.class).buildSessionFactory();
 
