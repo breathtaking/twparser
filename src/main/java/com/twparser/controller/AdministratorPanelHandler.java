@@ -2,6 +2,7 @@ package com.twparser.controller;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.twparser.model.Post;
+import com.twparser.model.User;
 import com.twparser.processing.OperationManager;
 
 import javax.servlet.ServletException;
@@ -20,6 +21,7 @@ import java.util.List;
 public class AdministratorPanelHandler extends HttpServlet {
     private OperationManager operationManager = new OperationManager();
     private List<Post> posts = null;
+    private User user;
     private int page;
 
     @Override
@@ -43,6 +45,7 @@ public class AdministratorPanelHandler extends HttpServlet {
         req.setAttribute("postList", sublist);
         req.setAttribute("noOfPages", noOfPages);
         req.setAttribute("currentPage", page);
+        req.setAttribute("user", user);
         req.getRequestDispatcher("/WEB-INF/pages/content.jsp").forward(req, resp);
     }
 
@@ -52,6 +55,7 @@ public class AdministratorPanelHandler extends HttpServlet {
 
         try {
             posts = operationManager.addUser(userUrl);
+            user = operationManager.grabUser(userUrl);
         } catch (UnirestException e) {
             e.printStackTrace();
         }
@@ -69,6 +73,7 @@ public class AdministratorPanelHandler extends HttpServlet {
         req.setAttribute("postList", sublist);
         req.setAttribute("noOfPages", numberOfPages);
         req.setAttribute("currentPage", page);
+        req.setAttribute("user", user);
         req.getRequestDispatcher("/WEB-INF/pages/content.jsp").forward(req, resp);
     }
 }

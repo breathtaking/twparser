@@ -5,8 +5,77 @@ ul {
 }
 
 li img {
-    margin: 10px;
+    margin: 0 auto;
     border: 5px solid #fff;
-    width: 300px;
+    width: 500px;
+}
+
+.pageContainer {
+    width: 1000px;
+    margin: 0 auto;
+    border: 1px solid;
+}
+
+.contentTWContainer {
+    background: white;
+    clear: both;
+}
+
+.contentTW {
+    background: white;
+    margin-left: 25%;
+    clear: both;
+}
+
+.contentTWPaggination {
+    background: white;
+    clear: both;
+}
+
+.headerTW {
+    width: 1000px;
     height: 300px;
+}
+
+.headerTWLeft {
+    background: darkgrey;
+    width: 500px;
+    height: 100%;
+    float: left;
+}
+
+.headerTWRight {
+    background: darkgrey;
+    float: right;
+    width: 500px;
+    height: 100%;
+}
+.headerTWRight img {
+    margin-top: 15%;
+    margin-left: 25%;
+    width: 150px;
+}
+.wholePage {
+    width: 100%;
+    background: #e6ecf0;
+}
+
+h1 {
+    color:white;
+    text-shadow: 1px 1px 4px grey;
+    margin-left: 10px;
+}
+
+h2 {
+    color:white;
+    text-shadow: 1px 1px 4px grey;
+    margin-left: 10px;
+}
+
+.vscrolling_container {
+    width: 100%; overflow: auto;
+}
+.outer {
+    width: auto;
+    overflow: hidden;
 }

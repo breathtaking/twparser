@@ -1,8 +1,10 @@
 package com.twparser.dao;
 
+import com.twparser.model.Post;
 import com.twparser.model.User;
 
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Created by
@@ -21,6 +23,12 @@ public class DataBaseInteractionManager {
             }
         }
         return false;
+    }
+
+    public boolean addPosts(List<Post> postList) {
+        entityFactory = HibernateEntityFactory.getInstance();
+        entityFactory.getPostDao().addPosts(postList);
+        return true;
     }
 
     Boolean isUserExistsInDataBase(String userId) {

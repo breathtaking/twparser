@@ -30,12 +30,25 @@ public class OperationManager {
         System.out.println("Receiving tweets...");
         List<Post> postList = UnirestScrapperTW.grabAllPosts(userId);
 
+        if(postList != null && postList.size() > 0) {
+            System.out.println("Adding posts to database");
+            addPosts(postList);
+        }
+
         System.out.println("Checking user " + userId + " in database...");
         boolean isUserExist = dataBaseInteractionManager.addUser(user);
         System.out.println("Was user added?" + isUserExist);
 
         System.out.println("Success!");
         return postList;
+    }
+
+    private boolean addPosts (List<Post> postList) {
+        return dataBaseInteractionManager.addPosts(postList);
+    }
+
+    public User grabUser (String userId) {
+        return UnirestScrapperTW.grabUser(userId);
     }
 
 }

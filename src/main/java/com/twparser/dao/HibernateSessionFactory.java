@@ -36,6 +36,6 @@ public class HibernateSessionFactory {
     }
 
     public static SessionFactory getPostSessionFactory() {
-        return userSessionFactory;
+        return postSessionFactory;
     }
 }

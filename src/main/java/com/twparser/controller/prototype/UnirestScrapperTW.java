@@ -184,7 +184,7 @@ public final class UnirestScrapperTW {
 
         if (isVideoPostPresent) {
             List<Post> postList = new ArrayList<>();
-            String embededHtml = getEmbededPostHtml(profileIdentifier, postId);
+            String embededHtml = getEmbedLightPostHtml(profileIdentifier, postId);
             postList.add(grabCommonProfileInfo(post, profileIdentifier)
                     .embedVideoHtml(embededHtml)
                     .postType(PostType.VIDEO)
@@ -194,7 +194,7 @@ public final class UnirestScrapperTW {
 
         if (isGifPostPresent) {
             List<Post> postList = new ArrayList<>();
-            String embededHtml = getEmbededPostHtml(profileIdentifier, postId);
+            String embededHtml = getEmbedLightPostHtml(profileIdentifier, postId);
             postList.add(grabCommonProfileInfo(post, profileIdentifier)
                     .embedVideoHtml(embededHtml)
                     .postType(PostType.GIF)
@@ -290,6 +290,11 @@ public final class UnirestScrapperTW {
                 .header("referer", "https://twitter.com/" + profileIdentifier)
                 .queryString(getQueryParametersMap(dataMinPosition))
                 .asJson();
+    }
+
+    private static String getEmbedLightPostHtml (String userIdentifier, String postId) {
+        return String.format("<blockquote class=\"twitter-tweet\"><a href=\"https://twitter.com/%s/status/%s\"></a></blockquote><script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>",
+                userIdentifier, postId);
     }
 
     private static String getEmbededPostHtml(String userIdentifier, String postId) throws UnirestException {
